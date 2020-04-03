@@ -196,7 +196,7 @@ def OnPowerUp():
    
   if TRetour >= SRet:
     SOut = SRet
-  else:
+  else::
     TempPin = TPinEnv: TRead ()
     SOut = SRet-TEnv/10*2+SRet
      
@@ -285,7 +285,7 @@ def main():
         isElectrical = false    
         isHWC = true
         serout SSR, Baud, (0, 0)	#turn off SSRs
-      else:
+      else::
         elControl()
     
     if isHWC == true: 
@@ -299,7 +299,7 @@ def main():
       if THW < SOut:
         isElectrical = true
         isHWC = false
-      else:
+      else::
         hwcControl()
     
     #check if in other modes
@@ -310,7 +310,7 @@ def main():
       isElectrical = true
       isHWC = false
     
-  else:
+  else::
     # no flow established, display error message
     serout lcd, baud, (0, hMode, "FLOW ERR")
 
@@ -342,14 +342,14 @@ def hwcControl():
       Gain = Err1*kH/100
       valveGoal = Gain + valveGoal max valveFullOpen
       mtrDir = mtrOpen: valveControl()
-  else:
+  else::
     Err1 = TOut - Sout
     if Err1 > BW:
       Gain = Err1*kH/100
       
       if valveGoal > gain:
         valveGoal = valveGoal - Gain
-      else:
+      else::
         valveGoal = valveClosed 
       if valveGoal < valveClosed: 
         valveGoal = valveClosed
@@ -359,7 +359,7 @@ def hwcControl():
   wtmp1 = valveFullOpen - valveClosed
   if valvePos => valveClosed:
     pwr = valvePos - valveClosed * 100 / wtmp1 * 10
-  else:
+  else::
     pwr = 0
   PID2()
 
@@ -380,13 +380,13 @@ def elControl():
     if Err1 > BW:
       Gain = Err1*kP/100
       Pwr  = Gain + Pwr max 1000
-  else:
+  else::
     Err1 = TOut - Sout
     if Err1 > BW:
       Gain = Err1*kP/100
       if Pwr > Gain:
         Pwr = Pwr - Gain
-      else
+      else:
         Pwr = 0
       
     
@@ -417,7 +417,7 @@ def PID2():
       SOut = SOut + Gain max 8000
       cLag = 0
     
-  else
+  else:
     Err2 = TRetour - SRet
     if Lag = cLag:
       Gain = kI*Err2/10
@@ -548,7 +548,7 @@ DisplayPwr:
       serout Lcd, Baud, (0, hPwr, " ", #tmp1, ".", #tmp2)
     case 101 to 999
       serout Lcd, Baud, (0, hPwr, #tmp1, ".", #tmp2)
-    else
+    else:
       serout Lcd, Baud, (0, hPwr, #tmp1, " ")
   endselect
  return}
@@ -609,7 +609,7 @@ valveControl:
    if valveGoal < valveClosed: 
      if valvePos <= valveClosed:
        goto skipControl
-     else
+     else:
        valveGoal = valveClosed
      
    end if
@@ -626,7 +626,7 @@ valveControl:
     #establish motor direction
     if valvePos < valveGoal:
       mtrDir = mtrOpen
-    else
+    else:
       mtrDir = mtrClose
     
     
@@ -638,7 +638,7 @@ valveControl:
         if mtrDir = mtrOpen:
     #pause 50    
       inc mtrIndex      
-    else
+    else:
       dec mtrIndex   
     
 
