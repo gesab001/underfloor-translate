@@ -202,13 +202,13 @@ def OnPowerUp():
      
   #set main LCD screen 
 #	TempOutput:(Time)
-#{ if PV3 > startlt then (time on)
+#{ if PV3 > startlt: (time on)
 #    SolarPower = false
- # endif
+ # 
   
-#  if PV3 > SSH then (time of)
+#  if PV3 > SSH: (time of)
 ##    SolarPower = true
-#  endif
+#  
 #return}
 	
 #	UpdateBandwidth: (high temp low temp setting)
@@ -327,7 +327,7 @@ main()
 
 #Subroutines
 #================================
-hwcControl:
+def hwcControl():
 # hwcControl contains the PID algorithm for hwc heating
 # USE
 #   hwcControl()
@@ -336,46 +336,35 @@ hwcControl:
 # OUTPUT: none
 #
 # NOTE: alters pwr for display purposes
-{
-  if TOut <= Sout then
+  if TOut <= Sout:
     Err1 = SOut - TOut
-    if Err1 > BW then
+    if Err1 >:
       Gain = Err1*kH/100
       valveGoal = Gain + valveGoal max valveFullOpen
       mtrDir = mtrOpen: valveControl()
-    endif
-  else
+  else:
     Err1 = TOut - Sout
-    if Err1 > BW then
+    if Err1 > BW:
       Gain = Err1*kH/100
       
-      if valveGoal > gain then
+      if valveGoal > gain:
         valveGoal = valveGoal - Gain
-      else
+      else:
+        valveGoal = valveClosed 
+      if valveGoal < valveClosed: 
         valveGoal = valveClosed
-      endif 
-      
-      if valveGoal < valveClosed then 
-        valveGoal = valveClosed
-      end if
-      
       mtrDir = mtrClose: valveControl()
-    endif
-  endif
   
   #calculates pwr as percentage of (valveFullOpen - valveClosed)
   wtmp1 = valveFullOpen - valveClosed
-  if valvePos => valveClosed then
+  if valvePos => valveClosed:
     pwr = valvePos - valveClosed * 100 / wtmp1 * 10
-  else
+  else:
     pwr = 0
-  endif  
-  
   PID2()
-return}
 
 
-elControl:
+def elControl():
 # elControl contains the PID algorithm for electrical heating
 #
 # USE
@@ -383,34 +372,32 @@ elControl:
 # 
 # IN arg: none
 # OUTPUT: pwr
-{
   #PID1 control
   #==============================
   #Proportional
-  if TOut <= Sout then
+  if TOut <= Sout:
     Err1 = SOut - TOut
-    if Err1 > BW then
+    if Err1 > BW:
       Gain = Err1*kP/100
       Pwr  = Gain + Pwr max 1000
-    endif
-  else
+  else:
     Err1 = TOut - Sout
-    if Err1 > BW then
+    if Err1 > BW:
       Gain = Err1*kP/100
-      if Pwr > Gain then
+      if Pwr > Gain:
         Pwr = Pwr - Gain
       else
         Pwr = 0
-      endif
-    endif
-  endif
+      
+    
+  
   PID2()
   serout SSR, Baud, (b19, b18)
 
 return}
 
 
-PID2:
+def PID2():
 # PID2 controls the Set Value of the output
 #
 # USE 
@@ -420,28 +407,26 @@ PID2:
 # OUTPUT: SOut
 
 
-{  #PID2 control
+  #PID2 control
   #==============================
   inc cLag
-  if TRetour <= SRet then
+  if TRetour <= SRet:
     Err2 = SRet - TRetour
-    if Lag = cLag then
+    if Lag = cLag:
       Gain = kI*Err2/10
       SOut = SOut + Gain max 8000
       cLag = 0
-    endif
+    
   else
     Err2 = TRetour - SRet
-    if Lag = cLag then
+    if Lag = cLag:
       Gain = kI*Err2/10
       Sout = Sout - Gain
-      if SOut < SRet then 
+      if SOut < SRet: 
         Sout = SRet
-      endif
+      
       cLag = 0
-    endif
-  endif
-return}
+    
 
 TRead:
 # Returns the t° at the specified pin and display results 
@@ -477,14 +462,14 @@ TRead:
   @bptrinc = tmp5
   @bptr    = tmp6
   
-  if TDisp = true then
+  if TDisp = true:
     tmp2 = tmp2/10
     serout Lcd, Baud, (0, tmp3)
-    if tmp1 <10 then
+    if tmp1 <10:
       serout Lcd, Baud, (" ")
-    endif
+    
     serout Lcd, Baud, (#tmp1, ".", #tmp2)
-  endif
+  
  return}
   
  
@@ -621,12 +606,12 @@ valveControl:
 {
    readadc a.0, valvePos
    
-   if valveGoal < valveClosed then 
-     if valvePos <= valveClosed then
+   if valveGoal < valveClosed: 
+     if valvePos <= valveClosed:
        goto skipControl
      else
        valveGoal = valveClosed
-     endif
+     
    end if
   
    tmp2 = mtrIndex//4
@@ -639,23 +624,23 @@ valveControl:
 
 
     #establish motor direction
-    if valvePos < valveGoal then
+    if valvePos < valveGoal:
       mtrDir = mtrOpen
     else
       mtrDir = mtrClose
-    endif
+    
     
     #sertxd (" Valve pos: ", #valvePos, ", goal: ", #ValveGoal, cr, lf)
  #   sertxd (" Steps: ", #tmp2, cr, lf, cr,lf)
     #pause 250
     
     #pause 50
-        if mtrDir = mtrOpen then
+        if mtrDir = mtrOpen:
     #pause 50    
       inc mtrIndex      
     else
       dec mtrIndex   
-    endif
+    
 
     #move motor
     lookup tmp2, (%1100, %0110, %0011, %1001), pinsB
