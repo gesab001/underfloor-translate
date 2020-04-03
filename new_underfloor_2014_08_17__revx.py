@@ -191,13 +191,13 @@ def OnPowerUp():
   #Initialise SOut
       
   TDisp = false
-  TempPin = TPinRet: gosub TRead
-  TempPin = TPinOut: gosub TRead
+  TempPin = TPinRet: TRead()
+  TempPin = TPinOut: TRead()
    
   if TRetour >= SRet:
     SOut = SRet
   else:
-    TempPin = TPinEnv: gosub TRead
+    TempPin = TPinEnv: TRead ()
     SOut = SRet-TEnv/10*2+SRet
      
   #set main LCD screen 
@@ -217,13 +217,13 @@ def OnPowerUp():
 #  BW2H = SP2  (high Temp setting)
 #return}
   pause 1000
-  gosub MainScreen
+  MainScreen()
   
   #set pump
   high pump
   
   # close valve on startuUp
-  valveGoal = valveClosed: gosub valveControl
+  valveGoal = valveClosed: valveControl()
   serout SSR, Baud, (0, 0)	#turn off SSRs
  
   # set function
@@ -247,51 +247,48 @@ def OnPowerUp():
   b8 = b8 & %00001111 + temp_byte  
     
 
-main:
+def main():
   
   TDisp = true
-  TempPin = TPinRet: gosub TRead
-  TempPin = TPinOut: gosub TRead
-  TempPin = TPinEnv: gosub TRead
-  TEmpPin = TPinHW:  gosub TRead
+  TempPin = TPinRet: TRead()
+  TempPin = TPinOut: TRead()
+  TempPin = TPinEnv: TRead()
+  TEmpPin = TPinHW:  TRead()
   
  
-  if btnISet = true then
-    isElectrical = isElectrical XOR 1
-    isHWC = isHWC XOR 1
-  endif 
+  if btnISet == true:
+    isElectrical = isElectrical ^ 1
+    isHWC = isHWC ^  1
   
   
-  if TRetour >= SRet then
+  
+  if TRetour >= SRet:
      isSettled = true
-  endif
+ 
 
   #controls operation
-  if flowSw = true then
+  if flowSw == true:
   
-    if isElectrical = true then 
+    if isElectrical == true: 
     
       #update mode
       serout lcd, baud, (0, hMode, "ELECTRIC")
 
       #if in Electric mode the valve must be closed
       readadc a.0, valvePos
-      if valvePos > valveClosed then
-        valveGoal = valveClosed: mtrDir = mtrClose: gosub valveControl
-      endif      
+      if valvePos > valveClosed:
+        valveGoal = valveClosed: mtrDir = mtrClose: valveControl()
+            
     
       #check if enough hot water for change over
-      if THW > HWSwitchOver and isSettled = true then  
+      if THW > HWSwitchOver and isSettled == true: 
         isElectrical = false    
         isHWC = true
         serout SSR, Baud, (0, 0)	#turn off SSRs
-      else
-        gosub elControl
-      endif
-      
-    endif
+      else:
+        elControl()
     
-    if isHWC = true then 
+    if isHWC == true: 
     
       #update mode
       serout lcd, baud, (0, hMode, "HWC     ")
@@ -299,37 +296,33 @@ main:
       serout SSR, Baud, (0, 0)
 
       #check if enough water for change over
-      if THW < SOut then
+      if THW < SOut:
         isElectrical = true
         isHWC = false
-      else
-        gosub hwcControl
-      endif
-      
-    endif
+      else:
+        hwcControl()
     
     #check if in other modes
-    if isElectrical = false and isHWC = false then
+    if isElectrical == false and isHWC == false:
       serout lcd, baud, (0, hMode, "OFF     ")
-    elseif isElectrical = true and isHWC = true then
+    elif isElectrical == true and isHWC == true:
       serout lcd, baud, (0, hMode, "RESETING")
       isElectrical = true
       isHWC = false
-    endif
     
-  else
+  else:
     # no flow established, display error message
     serout lcd, baud, (0, hMode, "FLOW ERR")
-  endif
 
   #update display data
-  gosub DisplaySout
-  gosub DisplaySret
-  gosub DisplayPwr
+  DisplaySout()
+  DisplaySret()
+  DisplayPwr()
   
   #send log to PC
-  gosub SendDataLog
-goto main
+  SendDataLog()
+
+main()
  
 
 #Subroutines
@@ -337,7 +330,7 @@ goto main
 hwcControl:
 # hwcControl contains the PID algorithm for hwc heating
 # USE
-#   gosub hwcControl
+#   hwcControl()
 # 
 # IN arg: none
 # OUTPUT: none
@@ -349,7 +342,7 @@ hwcControl:
     if Err1 > BW then
       Gain = Err1*kH/100
       valveGoal = Gain + valveGoal max valveFullOpen
-      mtrDir = mtrOpen: gosub valveControl
+      mtrDir = mtrOpen: valveControl()
     endif
   else
     Err1 = TOut - Sout
@@ -366,7 +359,7 @@ hwcControl:
         valveGoal = valveClosed
       end if
       
-      mtrDir = mtrClose: gosub valveControl
+      mtrDir = mtrClose: valveControl()
     endif
   endif
   
@@ -378,7 +371,7 @@ hwcControl:
     pwr = 0
   endif  
   
-  gosub PID2
+  PID2()
 return}
 
 
@@ -386,7 +379,7 @@ elControl:
 # elControl contains the PID algorithm for electrical heating
 #
 # USE
-#  gosub elControl
+#  elControl()
 # 
 # IN arg: none
 # OUTPUT: pwr
@@ -411,7 +404,7 @@ elControl:
       endif
     endif
   endif
-  gosub PID2
+  PID2()
   serout SSR, Baud, (b19, b18)
 
 return}
@@ -421,7 +414,7 @@ PID2:
 # PID2 controls the Set Value of the output
 #
 # USE 
-#   gosub PID2
+#   PID2()
 #
 # IN arg: none
 # OUTPUT: SOut
@@ -454,7 +447,7 @@ TRead:
 # Returns the t° at the specified pin and display results 
 #
 # USE 
-#   TempPin = xx: [TDisp = True|False:] gosub TRead
+#   TempPin = xx: [TDisp = True|False:] TRead()
 #
 # IN arg: TempPin
 # OUTPUT: Corresponding value of TempPin [b4..b13]
@@ -499,7 +492,7 @@ MainScreen:
 # Updates main screen backround
 #
 # USE
-#   gosub MainScreen
+#   MainScreen()
 #
 # IN arg: none
 # OUTPUT: none
@@ -530,7 +523,7 @@ DisplaySout:
 # Updates the Sout value on main screen
 #
 # USE
-#   gosub DisplaySout
+#   DisplaySout()
 # 
 # IN arg: none
 # OUTPUT: none
@@ -544,7 +537,7 @@ DisplaySret:
 # Updates the Sret value on main screen
 #
 # USE
-#   gosub DisplaySret
+#   DisplaySret()
 # 
 # IN arg: none
 # OUTPUT: none
@@ -558,7 +551,7 @@ DisplayPwr:
 # Updates the Pwr value on main screen
 #
 # USE
-#   gosub DisplaySout
+#   DisplaySout()
 # 
 # IN arg: none
 # OUTPUT: none
@@ -580,7 +573,7 @@ SendDataLog:
 # Sends Data to serial out port for logging
 #
 # USE
-#   gosub SendDataLog
+#   SendDataLog()
 #
 # IN arg: none
 # OUTPUT: none
@@ -594,7 +587,7 @@ getButtons:
 # getButtons returns the statuts of buttons
 #
 # USE
-#  gosub getButtons
+#  getButtons()
 #
 # IN arg: none
 # OUTPUT: buttons
@@ -617,7 +610,7 @@ return}
 valveControl:
 # controls the valve opening
 # USE
-#   mtrStep = xx: mtrDir = x]: gosub valveControl
+#   mtrStep = xx: mtrDir = x]: valveControl()
 #
 # IN arg: mtrStep, the number of steps to be done
 #         mtrDir, the direction (mtrOpen or mtrClose)
