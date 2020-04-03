@@ -209,13 +209,13 @@ def OnPowerUp():
 #  if PV3 > SSH: (time of)
 ##    SolarPower = true
 #  
-#return}
+#
 	
 #	UpdateBandwidth: (high temp low temp setting)
 #{
 #  BW2L = SP2 - BW2 (low Temp setting)
 #  BW2H = SP2  (high Temp setting)
-#return}
+#
   pause 1000
   MainScreen()
   
@@ -394,8 +394,6 @@ def elControl():
   PID2()
   serout SSR, Baud, (b19, b18)
 
-return}
-
 
 def PID2():
 # PID2 controls the Set Value of the output
@@ -470,7 +468,7 @@ TRead:
     
     serout Lcd, Baud, (#tmp1, ".", #tmp2)
   
- return}
+ 
   
  
 MainScreen:
@@ -502,7 +500,7 @@ MainScreen:
     read bCount, tmp1
     serout Lcd, Baud, (tmp1)
   next 
- return}
+ 
  
 DisplaySout:
 # Updates the Sout value on main screen
@@ -516,7 +514,7 @@ DisplaySout:
 { tmp1 = SOut /100
   tmp2 = SOut//100 / 10
   serout Lcd, Baud, (0, hSo, #tmp1, ".", #tmp2)
- return}
+ 
  
 DisplaySret:
 # Updates the Sret value on main screen
@@ -530,7 +528,7 @@ DisplaySret:
 { tmp1 = SRet /100
   tmp2 = Sret//100 / 10
   serout Lcd, Baud, (0, hSr, #tmp1, ".", #tmp2)
- return}
+ 
  
 DisplayPwr:
 # Updates the Pwr value on main screen
@@ -551,7 +549,7 @@ DisplayPwr:
     else:
       serout Lcd, Baud, (0, hPwr, #tmp1, " ")
   endselect
- return}
+ 
  
 
 SendDataLog:
@@ -565,7 +563,7 @@ SendDataLog:
 { 
   sertxd (#w23, ",", #SRet, ",", #THW, ",", #Tout, ",", #TRetour,",",#valvePos,",",#valveGoal,",",#Sout, cr, lf)
   inc w23
- return}
+ 
 
 
 getButtons:
@@ -590,7 +588,7 @@ getButtons:
     tmp1 = pinsB >> 4
   loop until tmp1 = 0
 
-return}
+
 
 valveControl:
 # controls the valve opening
@@ -652,5 +650,5 @@ valveControl:
   
 skipControl:
   pinsB = 0
-return}
+
 
