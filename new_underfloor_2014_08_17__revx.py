@@ -1,4 +1,4 @@
-#rem
+"""
 =================================
 
 Underfloor Heating Control
@@ -23,54 +23,54 @@ REVISION HISTORY:
 
 
 =================================
-#endrem
+"""
 
 #picaxe 28x2
-'#no_data
-'#no_table
+##no_data
+##no_table
 #terminal 9600
 
-'Eeprom preload
+#Eeprom preload
 eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO      Thwc xx.xß")
 
 
-'Hardware definitions
-'================================
+#Hardware definitions
+#================================
 
 
 
-'Temperature sensors pins
-{ symbol TPinRet  = C.0		'retour       [T1]
-  symbol TPinOut  = A.3		'inlet        [T2]
-  symbol TPinHW   = A.2		'Hot Water    [T3]
-  symbol TPinEnv  = A.1		'Environment  [T4]
-  symbol pinVpos  = a.0		'valve position feedback from potentiometer [T5]
+#Temperature sensors pins
+{ symbol TPinRet  = C.0		#retour       [T1]
+  symbol TPinOut  = A.3		#inlet        [T2]
+  symbol TPinHW   = A.2		#Hot Water    [T3]
+  symbol TPinEnv  = A.1		#Environment  [T4]
+  symbol pinVpos  = a.0		#valve position feedback from potentiometer [T5]
 }
 
- 'serial comms
+ #serial comms
 { symbol Lcd = C.1
   symbol SSR = C.2
 }
- 'buttons
+ #buttons
   symbol btnISet = pinB.4
 
- 'limiter input
+ #limiter input
   symbol mtrLim = pinC.5
 }
 
- 'flow switch
-{ symbol FlowSw = pinC.6		'active low: activated wen false
+ #flow switch
+{ symbol FlowSw = pinC.6		#active low: activated wen false
 }
 
- 'flow pump
+ #flow pump
 { symbol Pump = C.7
 }
 }
 
-'Software definitions
-'================================
+#Software definitions
+#================================
 { 
- 'LCD constants
+ #LCD constants
 { symbol rows  = 4
   symbol cols  = 20
   symbol line1 = $80
@@ -79,7 +79,7 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
   symbol line4 = $D4
   symbol clr   = 1
   
-  'placeholders
+  #placeholders
   symbol hSo   = $84
   symbol hSr   = $C4
   symbol hPwr  = $98
@@ -91,7 +91,7 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
    
 }
 
- 'System Constants
+ #System Constants
 { symbol baud = T2400_8
   symbol TDisp = bit0
   symbol isElectrical = bit2
@@ -102,9 +102,9 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
   symbol true  = 1
  }
   
- 'program variables
-{ symbol bCount  = b55		'byte counter
-  symbol tmp1    = b48		'green vars
+ #program variables
+{ symbol bCount  = b55		#byte counter
+  symbol tmp1    = b48		#green vars
   symbol tmp2    = b49
   symbol wtmp1   = w24
   symbol tmp3    = b50
@@ -113,56 +113,56 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
   symbol tmp5    = b52
   symbol tmp6    = b53
   symbol wtmp3   = w26
-  symbol tTemp   = w26		'used in temperature aquisition
-  symbol TempPin = b54		'used in temperature aquisition
+  symbol tTemp   = w26		#used in temperature aquisition
+  symbol TempPin = b54		#used in temperature aquisition
   
-  'control variables
-  symbol TRetour = w2		'retour temperature
-  symbol TOut    = w3		'inlet temperature
-  symbol THW     = w4		'hot water temperature
-  symbol TEnv    = w5		'Environment temperature
-  symbol T5Val   = w6		'Reserved
-  symbol BWn      = w22          '(23C-BWn=19C) 
-  symbol HWSwitchOver = 3200     'HWC threshold was 3000
+  #control variables
+  symbol TRetour = w2		#retour temperature
+  symbol TOut    = w3		#inlet temperature
+  symbol THW     = w4		#hot water temperature
+  symbol TEnv    = w5		#Environment temperature
+  symbol T5Val   = w6		#Reserved
+  symbol BWn      = w22          #(23C-BWn=19C) 
+  symbol HWSwitchOver = 3200     #HWC threshold was 3000
 
   
-  'PID
-  symbol SOut = w7		'Set output temperature
-  symbol SRet = w8		'Set return temperature
-  symbol Pwr  = w9		'Duty cycle for pwm
+  #PID
+  symbol SOut = w7		#Set output temperature
+  symbol SRet = w8		#Set return temperature
+  symbol Pwr  = w9		#Duty cycle for pwm
   symbol Err1 = w10
   symbol Err2 = w11
-  symbol Lag  = b24		'TRetour lag, cycles
+  symbol Lag  = b24		#TRetour lag, cycles
   symbol cLag = b25
   symbol Gain = w13
   symbol kP   = 40
   symbol kI   = 25
   symbol kH   = 3
-  symbol BW   = 10		'0.1° Bandwidth
+  symbol BW   = 10		#0.1° Bandwidth
  
-  'Buttons
-  symbol buttons = b1		'buttons status return 
+  #Buttons
+  symbol buttons = b1		#buttons status return 
   symbol btnDn   = bit11
   symbol btnUp   = bit10
   symbol btnEsc  = bit9
   symbol btnSet  = bit8
   
-  'Step Motor
-  symbol mtrDir    = bit1	'motor direction, true negative, false positive
-  symbol mtrStep   = b28	'number of steps
-  symbol mtrIndex  = b29      'step index
-  symbol valvePos  = w15	'valve position
-  symbol valveGoal = w16	'valve goal
+  #Step Motor
+  symbol mtrDir    = bit1	#motor direction, true negative, false positive
+  symbol mtrStep   = b28	#number of steps
+  symbol mtrIndex  = b29      #step index
+  symbol valvePos  = w15	#valve position
+  symbol valveGoal = w16	#valve goal
   
-  symbol mtrOpen  = 0	      'open valve
-  symbol mtrClose = 1		'close valve
-  symbol valveFullOpen = 194  'upper valve limit, 8 bit adc
-  symbol valveClosed = 64      'lower valve limit, 8 bit adc
+  symbol mtrOpen  = 0	      #open valve
+  symbol mtrClose = 1		#close valve
+  symbol valveFullOpen = 194  #upper valve limit, 8 bit adc
+  symbol valveClosed = 64      #lower valve limit, 8 bit adc
 		
-  symbol startlt = w20         'time low temp on
-  symbol stoplt = w21	    'time low temp off
+  symbol startlt = w20         #time low temp on
+  symbol stoplt = w21	    #time low temp off
 		
-  symbol temp_word = w17   '(b34 + b35)
+  symbol temp_word = w17   #(b34 + b35)
   symbol temp_byte = b36
   symbol hours = b37
   symbol mins = b38
@@ -180,15 +180,15 @@ OnPowerUp:
   high Lcd
   high SSR
   
-  SRet = 2300                ' Set point  was 19.3
+  SRet = 2300                # Set point  was 19.3
   Pwr  = 0
   Lag  = 120
   cLag = 0
-  startlt  = 2100               ' Time for low temperature on
-  stoplt   = 500                ' Time for low temperature off
-  BWn  = 400	              ' 23C-4C=19C 
+  startlt  = 2100               # Time for low temperature on
+  stoplt   = 500                # Time for low temperature off
+  BWn  = 400	              # 23C-4C=19C 
 	
-  'Initialise SOut
+  #Initialise SOut
       
   TDisp = false
   TempPin = TPinRet: gosub TRead
@@ -202,38 +202,38 @@ OnPowerUp:
   endif
   
      
-  'set main LCD screen 
-'	TempOutput:(Time)
-'{ if PV3 > startlt then (time on)
-'    SolarPower = false
- ' endif
+  #set main LCD screen 
+#	TempOutput:(Time)
+#{ if PV3 > startlt then (time on)
+#    SolarPower = false
+ # endif
   
-'  if PV3 > SSH then (time of)
-''    SolarPower = true
-'  endif
-'return}
+#  if PV3 > SSH then (time of)
+##    SolarPower = true
+#  endif
+#return}
 	
-'	UpdateBandwidth: (high temp low temp setting)
-'{
-'  BW2L = SP2 - BW2 (low Temp setting)
-'  BW2H = SP2  (high Temp setting)
-'return}
+#	UpdateBandwidth: (high temp low temp setting)
+#{
+#  BW2L = SP2 - BW2 (low Temp setting)
+#  BW2H = SP2  (high Temp setting)
+#return}
   pause 1000
   gosub MainScreen
   
-  'set pump
+  #set pump
   high pump
   
-  ' close valve on startuUp
+  # close valve on startuUp
   valveGoal = valveClosed: gosub valveControl
-  serout SSR, Baud, (0, 0)	'turn off SSRs
+  serout SSR, Baud, (0, 0)	#turn off SSRs
  
-  ' set function
+  # set function
   isElectrical = true
   isHWC = false
   isSettled = false
 	
-  '  Read Time 
+  #  Read Time 
   i2cslave %11010000, i2cslow, i2cbyte
   readi2c 0,(secs,mins,hours,b34,b35,b36)
   let b34=b36
@@ -268,25 +268,25 @@ main:
      isSettled = true
   endif
 
-  'controls operation
+  #controls operation
   if flowSw = true then
   
     if isElectrical = true then 
     
-      'update mode
+      #update mode
       serout lcd, baud, (0, hMode, "ELECTRIC")
 
-      'if in Electric mode the valve must be closed
+      #if in Electric mode the valve must be closed
       readadc a.0, valvePos
       if valvePos > valveClosed then
         valveGoal = valveClosed: mtrDir = mtrClose: gosub valveControl
       endif      
     
-      'check if enough hot water for change over
+      #check if enough hot water for change over
       if THW > HWSwitchOver and isSettled = true then  
         isElectrical = false    
         isHWC = true
-        serout SSR, Baud, (0, 0)	'turn off SSRs
+        serout SSR, Baud, (0, 0)	#turn off SSRs
       else
         gosub elControl
       endif
@@ -295,12 +295,12 @@ main:
     
     if isHWC = true then 
     
-      'update mode
+      #update mode
       serout lcd, baud, (0, hMode, "HWC     ")
-      'turn off SSRs
+      #turn off SSRs
       serout SSR, Baud, (0, 0)
 
-      'check if enough water for change over
+      #check if enough water for change over
       if THW < SOut then
         isElectrical = true
         isHWC = false
@@ -310,7 +310,7 @@ main:
       
     endif
     
-    'check if in other modes
+    #check if in other modes
     if isElectrical = false and isHWC = false then
       serout lcd, baud, (0, hMode, "OFF     ")
     elseif isElectrical = true and isHWC = true then
@@ -320,31 +320,31 @@ main:
     endif
     
   else
-    ' no flow established, display error message
+    # no flow established, display error message
     serout lcd, baud, (0, hMode, "FLOW ERR")
   endif
 
-  'update display data
+  #update display data
   gosub DisplaySout
   gosub DisplaySret
   gosub DisplayPwr
   
-  'send log to PC
+  #send log to PC
   gosub SendDataLog
 goto main
  
 
-'Subroutines
-'================================
+#Subroutines
+#================================
 hwcControl:
-' hwcControl contains the PID algorithm for hwc heating
-' USE
-'   gosub hwcControl
-' 
-' IN arg: none
-' OUTPUT: none
-'
-' NOTE: alters pwr for display purposes
+# hwcControl contains the PID algorithm for hwc heating
+# USE
+#   gosub hwcControl
+# 
+# IN arg: none
+# OUTPUT: none
+#
+# NOTE: alters pwr for display purposes
 {
   if TOut <= Sout then
     Err1 = SOut - TOut
@@ -372,7 +372,7 @@ hwcControl:
     endif
   endif
   
-  'calculates pwr as percentage of (valveFullOpen - valveClosed)
+  #calculates pwr as percentage of (valveFullOpen - valveClosed)
   wtmp1 = valveFullOpen - valveClosed
   if valvePos => valveClosed then
     pwr = valvePos - valveClosed * 100 / wtmp1 * 10
@@ -385,17 +385,17 @@ return}
 
 
 elControl:
-' elControl contains the PID algorithm for electrical heating
-'
-' USE
-'  gosub elControl
-' 
-' IN arg: none
-' OUTPUT: pwr
+# elControl contains the PID algorithm for electrical heating
+#
+# USE
+#  gosub elControl
+# 
+# IN arg: none
+# OUTPUT: pwr
 {
-  'PID1 control
-  '==============================
-  'Proportional
+  #PID1 control
+  #==============================
+  #Proportional
   if TOut <= Sout then
     Err1 = SOut - TOut
     if Err1 > BW then
@@ -420,17 +420,17 @@ return}
 
 
 PID2:
-' PID2 controls the Set Value of the output
-'
-' USE 
-'   gosub PID2
-'
-' IN arg: none
-' OUTPUT: SOut
+# PID2 controls the Set Value of the output
+#
+# USE 
+#   gosub PID2
+#
+# IN arg: none
+# OUTPUT: SOut
 
 
-{  'PID2 control
-  '==============================
+{  #PID2 control
+  #==============================
   inc cLag
   if TRetour <= SRet then
     Err2 = SRet - TRetour
@@ -453,15 +453,15 @@ PID2:
 return}
 
 TRead:
-' Returns the t° at the specified pin and display results 
-'
-' USE 
-'   TempPin = xx: [TDisp = True|False:] gosub TRead
-'
-' IN arg: TempPin
-' OUTPUT: Corresponding value of TempPin [b4..b13]
-' 
-' NOTE: if TDisp is set then the resulting value is displayed
+# Returns the t° at the specified pin and display results 
+#
+# USE 
+#   TempPin = xx: [TDisp = True|False:] gosub TRead
+#
+# IN arg: TempPin
+# OUTPUT: Corresponding value of TempPin [b4..b13]
+# 
+# NOTE: if TDisp is set then the resulting value is displayed
 {
   readtemp12 TempPin, tTemp
   tmp1 = tTemp >> 4
@@ -498,13 +498,13 @@ TRead:
   
  
 MainScreen:
-' Updates main screen backround
-'
-' USE
-'   gosub MainScreen
-'
-' IN arg: none
-' OUTPUT: none
+# Updates main screen backround
+#
+# USE
+#   gosub MainScreen
+#
+# IN arg: none
+# OUTPUT: none
 { serout Lcd, Baud, (0, clr)
   serout Lcd, Baud, (0, line1)
   for bCount = 95 to 114
@@ -529,13 +529,13 @@ MainScreen:
  return}
  
 DisplaySout:
-' Updates the Sout value on main screen
-'
-' USE
-'   gosub DisplaySout
-' 
-' IN arg: none
-' OUTPUT: none
+# Updates the Sout value on main screen
+#
+# USE
+#   gosub DisplaySout
+# 
+# IN arg: none
+# OUTPUT: none
 
 { tmp1 = SOut /100
   tmp2 = SOut//100 / 10
@@ -543,13 +543,13 @@ DisplaySout:
  return}
  
 DisplaySret:
-' Updates the Sret value on main screen
-'
-' USE
-'   gosub DisplaySret
-' 
-' IN arg: none
-' OUTPUT: none
+# Updates the Sret value on main screen
+#
+# USE
+#   gosub DisplaySret
+# 
+# IN arg: none
+# OUTPUT: none
 
 { tmp1 = SRet /100
   tmp2 = Sret//100 / 10
@@ -557,13 +557,13 @@ DisplaySret:
  return}
  
 DisplayPwr:
-' Updates the Pwr value on main screen
-'
-' USE
-'   gosub DisplaySout
-' 
-' IN arg: none
-' OUTPUT: none
+# Updates the Pwr value on main screen
+#
+# USE
+#   gosub DisplaySout
+# 
+# IN arg: none
+# OUTPUT: none
 {
   tmp1 = Pwr /10
   tmp2 = Pwr//10
@@ -579,13 +579,13 @@ DisplayPwr:
  
 
 SendDataLog:
-' Sends Data to serial out port for logging
-'
-' USE
-'   gosub SendDataLog
-'
-' IN arg: none
-' OUTPUT: none
+# Sends Data to serial out port for logging
+#
+# USE
+#   gosub SendDataLog
+#
+# IN arg: none
+# OUTPUT: none
 { 
   sertxd (#w23, ",", #SRet, ",", #THW, ",", #Tout, ",", #TRetour,",",#valvePos,",",#valveGoal,",",#Sout, cr, lf)
   inc w23
@@ -593,23 +593,23 @@ SendDataLog:
 
 
 getButtons:
-' getButtons returns the statuts of buttons
-'
-' USE
-'  gosub getButtons
-'
-' IN arg: none
-' OUTPUT: buttons
+# getButtons returns the statuts of buttons
+#
+# USE
+#  gosub getButtons
+#
+# IN arg: none
+# OUTPUT: buttons
 {
-  'wait for button to be pressed
+  #wait for button to be pressed
   do 
     buttons = pinsB >> 4
   loop until buttons > 0
  
-  'software debounce
+  #software debounce
   pause 100
     
-  'wait for release
+  #wait for release
   do
     tmp1 = pinsB >> 4
   loop until tmp1 = 0
@@ -617,16 +617,16 @@ getButtons:
 return}
 
 valveControl:
-' controls the valve opening
-' USE
-'   mtrStep = xx: mtrDir = x]: gosub valveControl
-'
-' IN arg: mtrStep, the number of steps to be done
-'         mtrDir, the direction (mtrOpen or mtrClose)
-' OUTPUT: valvePos, the position of the valve, 0 closed, 200 full open
-'
-' NOTE: if the valve reaches lower limit or calculated upper limit
-' it will not operate. mtrDir may be set before this call.
+# controls the valve opening
+# USE
+#   mtrStep = xx: mtrDir = x]: gosub valveControl
+#
+# IN arg: mtrStep, the number of steps to be done
+#         mtrDir, the direction (mtrOpen or mtrClose)
+# OUTPUT: valvePos, the position of the valve, 0 closed, 200 full open
+#
+# NOTE: if the valve reaches lower limit or calculated upper limit
+# it will not operate. mtrDir may be set before this call.
 {
    readadc a.0, valvePos
    
@@ -639,34 +639,34 @@ valveControl:
    end if
   
    tmp2 = mtrIndex//4
- '  sertxd (" Steps pos: ", #tmp2, cr, lf, cr,lf)
+ #  sertxd (" Steps pos: ", #tmp2, cr, lf, cr,lf)
    
   do until valveGoal = valvePos
-   'test only, remove when in use!
-    'serout lcd, baud, (0, line1, " Valve pos: ", #valvePos, "    ")
-    'serout lcd, baud, (0, line3, "     Steps: ", #mtrIndex, "     ")
+   #test only, remove when in use!
+    #serout lcd, baud, (0, line1, " Valve pos: ", #valvePos, "    ")
+    #serout lcd, baud, (0, line3, "     Steps: ", #mtrIndex, "     ")
 
 
-    'establish motor direction
+    #establish motor direction
     if valvePos < valveGoal then
       mtrDir = mtrOpen
     else
       mtrDir = mtrClose
     endif
     
-    'sertxd (" Valve pos: ", #valvePos, ", goal: ", #ValveGoal, cr, lf)
- '   sertxd (" Steps: ", #tmp2, cr, lf, cr,lf)
-    'pause 250
+    #sertxd (" Valve pos: ", #valvePos, ", goal: ", #ValveGoal, cr, lf)
+ #   sertxd (" Steps: ", #tmp2, cr, lf, cr,lf)
+    #pause 250
     
-    'pause 50
+    #pause 50
         if mtrDir = mtrOpen then
-    'pause 50    
+    #pause 50    
       inc mtrIndex      
     else
       dec mtrIndex   
     endif
 
-    'move motor
+    #move motor
     lookup tmp2, (%1100, %0110, %0011, %1001), pinsB
     pause 20
     tmp2 = mtrIndex//4
