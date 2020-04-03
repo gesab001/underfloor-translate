@@ -171,8 +171,8 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
 }
 
 
-OnPowerUp:
-{ setfreq m8
+def OnPowerUp():
+  setfreq m8
   dirsB = $0F
   dirsC = $86
   adcsetup = $0001
@@ -194,13 +194,11 @@ OnPowerUp:
   TempPin = TPinRet: gosub TRead
   TempPin = TPinOut: gosub TRead
    
-  if TRetour >= SRet then
+  if TRetour >= SRet:
     SOut = SRet
-  else
+  else:
     TempPin = TPinEnv: gosub TRead
     SOut = SRet-TEnv/10*2+SRet
-  endif
-  
      
   #set main LCD screen 
 #	TempOutput:(Time)
@@ -236,18 +234,18 @@ OnPowerUp:
   #  Read Time 
   i2cslave %11010000, i2cslow, i2cbyte
   readi2c 0,(secs,mins,hours,b34,b35,b36)
-  let b34=b36
-  let temp_byte = secs & %11110000 / 16 * 10
-  let secs = secs & %00001111 + temp_byte
-  let temp_byte = mins & %11110000 / 16 * 10
-  let mins = mins & %00001111 + temp_byte
-  let temp_byte = hours & %11110000 / 16 * 10
-  let hours = hours & %00001111 + temp_byte
-  let temp_byte = b9 & %11110000 / 16 * 10
-  let b9 = b9 & %00001111 + temp_byte
-  let temp_byte = b8 & %11110000 / 16 * 10
-  let b8 = b8 & %00001111 + temp_byte  
-    }
+  b34=b36
+  temp_byte = secs & %11110000 / 16 * 10
+  secs = secs & %00001111 + temp_byte
+  temp_byte = mins & %11110000 / 16 * 10
+  mins = mins & %00001111 + temp_byte
+  temp_byte = hours & %11110000 / 16 * 10
+  hours = hours & %00001111 + temp_byte
+  temp_byte = b9 & %11110000 / 16 * 10
+  b9 = b9 & %00001111 + temp_byte
+  temp_byte = b8 & %11110000 / 16 * 10
+  b8 = b8 & %00001111 + temp_byte  
+    
 
 main:
   
