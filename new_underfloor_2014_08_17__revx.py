@@ -32,7 +32,7 @@ REVISION HISTORY:
 #terminal 9600
 
 #Eeprom preload
-#eeprom 95, ("So  xx.x� Tout xx.x�Sr  xx.x� Tret xx.x�PWR xx.x% Tenv xx.x�AUTO      Thwc xx.x�")
+eeprom 95, ("So  xx.x� Tout xx.x�Sr  xx.x� Tret xx.x�PWR xx.x% Tenv xx.x�AUTO      Thwc xx.x�")
 
 
 #Hardware definitions
@@ -215,7 +215,7 @@ def OnPowerUp():
 #  BW2L = SP2 - BW2 (low Temp setting)
 #  BW2H = SP2  (high Temp setting)
 #
-  sleep(1000)
+  sleep(1)
   MainScreen()
   
   #set pump
@@ -440,20 +440,18 @@ def TRead():
   tmp2 = tTemp & $00F *625/100
   tTemp = tmp1 * 100 + tmp2
   
-  select TempPin
-    case TPinRet
+  if TempPin==TPinRet:
       bptr = 4
       tmp3 = hTret
-    case TPinOut
+  elif TempPin==TPinOut:
       bptr = 6
       tmp3 = hTout
-    case TPinHW
+  elif TempPin==TPinHW:
       bptr = 8
       tmp3 = hThwc
-    case TPinEnv
+  elif TempPin==TPinEnv:
       bptr = 10
       tmp3 = hTenv
-  endselect
   
   @bptrinc = tmp5
   @bptr    = tmp6
@@ -479,25 +477,25 @@ def MainScreen():
 # OUTPUT: none
   serout Lcd, Baud, (0, clr)
   serout Lcd, Baud, (0, line1)
-  for bCount = 95 to 114
+  for bCount  in range (95, 114):
     read bCount, tmp1
     serout Lcd, Baud, (tmp1)
-  next
+  bCount = bCount + 1
   serout Lcd, Baud, (0, line2)
-  for bCount = 115 to 134
+  for bCount in range(115,134):
     read bCount, tmp1
     serout Lcd, Baud, (tmp1)
-  next
+  bCount = bCount + 1
   serout Lcd, Baud, (0, line3)
-  for bCount = 135 to 154
+  for bCount in range(135,154):
     read bCount, tmp1
     serout Lcd, Baud, (tmp1)
-  next
+  bCount = bCount + 1
   serout Lcd, Baud, (0, line4)
-  for bCount = 155 to 174
+  for bCount in range(155,174):
     read bCount, tmp1
     serout Lcd, Baud, (tmp1)
-  next 
+  bCount = bCount + 1
  
  
 def DisplaySout():
@@ -576,7 +574,7 @@ def getButtons():
     buttons = pinsB + 4
  
   #software debounce
-  sleep(100)
+  sleep(.100)
     
   #wait for release
   while tmp1==0:
@@ -609,7 +607,7 @@ def valveControl():
    tmp2 = mtrIndex//4
  #  sertxd (" Steps pos: ", #tmp2, cr, lf, cr,lf)
    
-  do until valveGoal = valvePos
+  while valveGoal == valvePos:
    #test only, remove when in use!
     #serout lcd, baud, (0, line1, " Valve pos: ", #valvePos, "    ")
     #serout lcd, baud, (0, line3, "     Steps: ", #mtrIndex, "     ")
@@ -640,7 +638,6 @@ def valveControl():
     tmp2 = mtrIndex//4
     
     readadc a.0, valvePos
-  loop 
   
 def skipControl():
   pinsB = 0
