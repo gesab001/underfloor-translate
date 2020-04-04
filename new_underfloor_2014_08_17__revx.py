@@ -1,3 +1,4 @@
+from time import sleep
 """
 =================================
 
@@ -31,7 +32,7 @@ REVISION HISTORY:
 #terminal 9600
 
 #Eeprom preload
-eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO      Thwc xx.xß")
+#eeprom 95, ("So  xx.xï¿½ Tout xx.xï¿½Sr  xx.xï¿½ Tret xx.xï¿½PWR xx.x% Tenv xx.xï¿½AUTO      Thwc xx.xï¿½")
 
 
 #Hardware definitions
@@ -40,142 +41,140 @@ eeprom 95, ("So  xx.xß Tout xx.xßSr  xx.xß Tret xx.xßPWR xx.x% Tenv xx.xßAUTO   
 
 
 #Temperature sensors pins
-{ symbol TPinRet  = C.0		#retour       [T1]
-  symbol TPinOut  = A.3		#inlet        [T2]
-  symbol TPinHW   = A.2		#Hot Water    [T3]
-  symbol TPinEnv  = A.1		#Environment  [T4]
-  symbol pinVpos  = a.0		#valve position feedback from potentiometer [T5]
-}
+TPinRet  = "C.0"		#retour       [T1]
+TPinOut  = "A.3"		#inlet        [T2]
+TPinHW   = "A.2"		#Hot Water    [T3]
+TPinEnv  = "A.1"		#Environment  [T4]
+pinVpos  = "a.0"		#valve position feedback from potentiometer [T5]
+
 
  #serial comms
-{ symbol Lcd = C.1
-  symbol SSR = C.2
-}
+Lcd = "C.1"
+SSR = "C.2"
+
  #buttons
-  symbol btnISet = pinB.4
+btnISet = "pinB.4"
 
  #limiter input
-  symbol mtrLim = pinC.5
-}
+mtrLim = "pinC.5"
+
 
  #flow switch
-{ symbol FlowSw = pinC.6		#active low: activated wen false
-}
+FlowSw = "pinC.6"		#active low: activated wen false
+
 
  #flow pump
-{ symbol Pump = C.7
-}
-}
+Pump = "C.7"
+
+
 
 #Software definitions
 #================================
-{ 
+
  #LCD constants
-{ symbol rows  = 4
-  symbol cols  = 20
-  symbol line1 = $80
-  symbol line2 = $C0
-  symbol line3 = $94
-  symbol line4 = $D4
-  symbol clr   = 1
+rows  = 4
+cols  = 20
+line1 = "$80"
+line2 = "$C0"
+line3 = "$94"
+line4 = "$D4"
+clr   = 1
   
   #placeholders
-  symbol hSo   = $84
-  symbol hSr   = $C4
-  symbol hPwr  = $98
-  symbol hTout = $8F
-  symbol hTret = $CF
-  symbol hTenv = $A3
-  symbol hThwc = $E3
-  symbol hMode = $D4
+hSo   = "$84"
+hSr   = "$C4"
+hPwr  = "$98"
+hTout = "$8F"
+hTret = "$CF"
+hTenv = "$A3"
+hThwc = "$E3"
+hMode = "$D4"
    
-}
 
- #System Constants
-{ symbol baud = T2400_8
-  symbol TDisp = bit0
-  symbol isElectrical = bit2
-  symbol isHWC = bit3
-  symbol isSettled = bit4
-  symbol isNight = bit5
-  symbol false = 0
-  symbol true  = 1
- }
+
+#System Constants
+baud = "T2400_8"
+TDisp = "bit0"
+isElectrical = "bit2"
+isHWC = "bit3"
+isSettled = "bit4"
+isNight = "bit5"
+false = 0
+true  = 1
+
   
- #program variables
-{ symbol bCount  = b55		#byte counter
-  symbol tmp1    = b48		#green vars
-  symbol tmp2    = b49
-  symbol wtmp1   = w24
-  symbol tmp3    = b50
-  symbol tmp4    = b51
-  symbol wtmp2   = w25
-  symbol tmp5    = b52
-  symbol tmp6    = b53
-  symbol wtmp3   = w26
-  symbol tTemp   = w26		#used in temperature aquisition
-  symbol TempPin = b54		#used in temperature aquisition
+#program variables
+bCount  = "b55"		#byte counter
+tmp1    = "b48"		#green vars
+tmp2    = "b49"
+wtmp1   = "w24"
+tmp3    = "b50"
+tmp4    = "b51"
+wtmp2   = "w25"
+tmp5    = "b52"
+tmp6    = "b53"
+wtmp3   = "w26"
+tTemp   = "w26"		#used in temperature aquisition
+TempPin = "b54"		#used in temperature aquisition
   
   #control variables
-  symbol TRetour = w2		#retour temperature
-  symbol TOut    = w3		#inlet temperature
-  symbol THW     = w4		#hot water temperature
-  symbol TEnv    = w5		#Environment temperature
-  symbol T5Val   = w6		#Reserved
-  symbol BWn      = w22          #(23C-BWn=19C) 
-  symbol HWSwitchOver = 3200     #HWC threshold was 3000
+TRetour = "w2"		#retour temperature
+TOut    = "w3"		#inlet temperature
+THW     = "w4"		#hot water temperature
+TEnv    = "w5"		#Environment temperature
+T5Val   = "w6"		#Reserved
+BWn      = "w22"          #(23C-BWn=19C)
+HWSwitchOver = 3200     #HWC threshold was 3000
 
   
   #PID
-  symbol SOut = w7		#Set output temperature
-  symbol SRet = w8		#Set return temperature
-  symbol Pwr  = w9		#Duty cycle for pwm
-  symbol Err1 = w10
-  symbol Err2 = w11
-  symbol Lag  = b24		#TRetour lag, cycles
-  symbol cLag = b25
-  symbol Gain = w13
-  symbol kP   = 40
-  symbol kI   = 25
-  symbol kH   = 3
-  symbol BW   = 10		#0.1° Bandwidth
+SOut = "w7"		#Set output temperature
+SRet = "w8"		#Set return temperature
+Pwr  = "w9"		#Duty cycle for pwm
+Err1 = "w10"
+Err2 = "w11"
+Lag  = "b24"		#TRetour lag, cycles
+cLag = "b25"
+Gain = "w13"
+kP   = 40
+kI   = 25
+kH   = 3
+BW   = 10		#0.1ï¿½ Bandwidth
  
   #Buttons
-  symbol buttons = b1		#buttons status return 
-  symbol btnDn   = bit11
-  symbol btnUp   = bit10
-  symbol btnEsc  = bit9
-  symbol btnSet  = bit8
+buttons = "b1"		#buttons status return
+btnDn   = "bit11"
+btnUp   = "bit10"
+btnEsc  = "bit9"
+btnSet  = "bit8"
   
   #Step Motor
-  symbol mtrDir    = bit1	#motor direction, true negative, false positive
-  symbol mtrStep   = b28	#number of steps
-  symbol mtrIndex  = b29      #step index
-  symbol valvePos  = w15	#valve position
-  symbol valveGoal = w16	#valve goal
+mtrDir    = "bit1"	#motor direction, true negative, false positive
+mtrStep   = "b28"	#number of steps
+mtrIndex  = "b29"      #step index
+valvePos  = "w15"	#valve position
+valveGoal = "w16"	#valve goal
   
-  symbol mtrOpen  = 0	      #open valve
-  symbol mtrClose = 1		#close valve
-  symbol valveFullOpen = 194  #upper valve limit, 8 bit adc
-  symbol valveClosed = 64      #lower valve limit, 8 bit adc
+mtrOpen  = 0	      #open valve
+mtrClose = 1		#close valve
+valveFullOpen = 194  #upper valve limit, 8 bit adc
+valveClosed = 64      #lower valve limit, 8 bit adc
 		
-  symbol startlt = w20         #time low temp on
-  symbol stoplt = w21	    #time low temp off
+startlt = "w20"         #time low temp on
+stoplt = "w21"	    #time low temp off
 		
-  symbol temp_word = w17   #(b34 + b35)
-  symbol temp_byte = b36
-  symbol hours = b37
-  symbol mins = b38
-  symbol secs = b39
-}
-}
+temp_word = "w17"   #(b34 + b35)
+temp_byte = "b36"
+hours = "b37"
+mins = "b38"
+secs = "b39"
 
 
 def OnPowerUp():
   setfreq m8
-  dirsB = $0F
-  dirsC = $86
-  adcsetup = $0001
+  dirsB = "$0F"
+  dirsC = "$86"
+  adcsetup = "$0001"
 
   high Lcd
   high SSR
@@ -196,7 +195,7 @@ def OnPowerUp():
    
   if TRetour >= SRet:
     SOut = SRet
-  else::
+  else:
     TempPin = TPinEnv: TRead ()
     SOut = SRet-TEnv/10*2+SRet
      
@@ -216,7 +215,7 @@ def OnPowerUp():
 #  BW2L = SP2 - BW2 (low Temp setting)
 #  BW2H = SP2  (high Temp setting)
 #
-  pause 1000
+  sleep(1000)
   MainScreen()
   
   #set pump
@@ -235,15 +234,15 @@ def OnPowerUp():
   i2cslave %11010000, i2cslow, i2cbyte
   readi2c 0,(secs,mins,hours,b34,b35,b36)
   b34=b36
-  temp_byte = secs & %11110000 / 16 * 10
-  secs = secs & %00001111 + temp_byte
-  temp_byte = mins & %11110000 / 16 * 10
-  mins = mins & %00001111 + temp_byte
-  temp_byte = hours & %11110000 / 16 * 10
-  hours = hours & %00001111 + temp_byte
-  temp_byte = b9 & %11110000 / 16 * 10
-  b9 = b9 & %00001111 + temp_byte
-  temp_byte = b8 & %11110000 / 16 * 10
+  temp_byte = secs %11110000 / 16 * 10
+  secs = secs % 00001111 + temp_byte
+  temp_byte = mins %11110000 / 16 * 10
+  mins = mins % 00001111 + temp_byte
+  temp_byte = hours % 11110000 / 16 * 10
+  hours = hours % 00001111 + temp_byte
+  temp_byte = b9 %11110000 / 16 * 10
+  b9 = b9 %00001111 + temp_byte
+  temp_byte = b8 %11110000 / 16 * 10
   b8 = b8 & %00001111 + temp_byte  
     
 
@@ -285,7 +284,7 @@ def main():
         isElectrical = false    
         isHWC = true
         serout SSR, Baud, (0, 0)	#turn off SSRs
-      else::
+    else:
         elControl()
     
     if isHWC == true: 
@@ -299,7 +298,7 @@ def main():
       if THW < SOut:
         isElectrical = true
         isHWC = false
-      else::
+    else:
         hwcControl()
     
     #check if in other modes
@@ -310,7 +309,7 @@ def main():
       isElectrical = true
       isHWC = false
     
-  else::
+  else:
     # no flow established, display error message
     serout lcd, baud, (0, hMode, "FLOW ERR")
 
@@ -342,14 +341,14 @@ def hwcControl():
       Gain = Err1*kH/100
       valveGoal = Gain + valveGoal max valveFullOpen
       mtrDir = mtrOpen: valveControl()
-  else::
+  else:
     Err1 = TOut - Sout
     if Err1 > BW:
       Gain = Err1*kH/100
       
-      if valveGoal > gain:
+      if valveGoal > Gain:
         valveGoal = valveGoal - Gain
-      else::
+      else:
         valveGoal = valveClosed 
       if valveGoal < valveClosed: 
         valveGoal = valveClosed
@@ -357,9 +356,9 @@ def hwcControl():
   
   #calculates pwr as percentage of (valveFullOpen - valveClosed)
   wtmp1 = valveFullOpen - valveClosed
-  if valvePos => valveClosed:
+  if valvePos >= valveClosed:
     pwr = valvePos - valveClosed * 100 / wtmp1 * 10
-  else::
+  else:
     pwr = 0
   PID2()
 
@@ -380,7 +379,7 @@ def elControl():
     if Err1 > BW:
       Gain = Err1*kP/100
       Pwr  = Gain + Pwr max 1000
-  else::
+  else:
     Err1 = TOut - Sout
     if Err1 > BW:
       Gain = Err1*kP/100
@@ -426,8 +425,8 @@ def PID2():
       cLag = 0
     
 
-TRead:
-# Returns the t° at the specified pin and display results 
+def TRead():
+# Returns the tï¿½ at the specified pin and display results 
 #
 # USE 
 #   TempPin = xx: [TDisp = True|False:] TRead()
@@ -436,9 +435,8 @@ TRead:
 # OUTPUT: Corresponding value of TempPin [b4..b13]
 # 
 # NOTE: if TDisp is set then the resulting value is displayed
-{
   readtemp12 TempPin, tTemp
-  tmp1 = tTemp >> 4
+  tmp1 = tTemp + 4
   tmp2 = tTemp & $00F *625/100
   tTemp = tmp1 * 100 + tmp2
   
@@ -471,7 +469,7 @@ TRead:
  
   
  
-MainScreen:
+def MainScreen():
 # Updates main screen backround
 #
 # USE
@@ -479,7 +477,7 @@ MainScreen:
 #
 # IN arg: none
 # OUTPUT: none
-{ serout Lcd, Baud, (0, clr)
+  serout Lcd, Baud, (0, clr)
   serout Lcd, Baud, (0, line1)
   for bCount = 95 to 114
     read bCount, tmp1
@@ -502,7 +500,7 @@ MainScreen:
   next 
  
  
-DisplaySout:
+def DisplaySout():
 # Updates the Sout value on main screen
 #
 # USE
@@ -511,12 +509,12 @@ DisplaySout:
 # IN arg: none
 # OUTPUT: none
 
-{ tmp1 = SOut /100
+  tmp1 = SOut /100
   tmp2 = SOut//100 / 10
   serout Lcd, Baud, (0, hSo, #tmp1, ".", #tmp2)
  
  
-DisplaySret:
+def DisplaySret():
 # Updates the Sret value on main screen
 #
 # USE
@@ -525,12 +523,12 @@ DisplaySret:
 # IN arg: none
 # OUTPUT: none
 
-{ tmp1 = SRet /100
-  tmp2 = Sret//100 / 10
+  tmp1 = SRet /100
+  tmp2 = SRet //100 / 10
   serout Lcd, Baud, (0, hSr, #tmp1, ".", #tmp2)
  
  
-DisplayPwr:
+def DisplayPwr():
 # Updates the Pwr value on main screen
 #
 # USE
@@ -538,21 +536,19 @@ DisplayPwr:
 # 
 # IN arg: none
 # OUTPUT: none
-{
+
   tmp1 = Pwr /10
   tmp2 = Pwr//10
-  select Pwr
-    case < 100
-      serout Lcd, Baud, (0, hPwr, " ", #tmp1, ".", #tmp2)
-    case 101 to 999
-      serout Lcd, Baud, (0, hPwr, #tmp1, ".", #tmp2)
-    else:
-      serout Lcd, Baud, (0, hPwr, #tmp1, " ")
-  endselect
+  if Pwr < 100:
+      serout Lcd, Baud, (0, hPwr, " ", tmp1, ".", tmp2)
+  elif 101 <= Pwr <= 999:
+      serout Lcd, Baud, (0, hPwr, tmp1, ".", tmp2)
+  else:
+      serout Lcd, Baud, (0, hPwr, tmp1, " ")
  
  
 
-SendDataLog:
+def SendDataLog():
 # Sends Data to serial out port for logging
 #
 # USE
@@ -560,13 +556,13 @@ SendDataLog:
 #
 # IN arg: none
 # OUTPUT: none
-{ 
-  sertxd (#w23, ",", #SRet, ",", #THW, ",", #Tout, ",", #TRetour,",",#valvePos,",",#valveGoal,",",#Sout, cr, lf)
+ 
+  sertxd (w23, ",", SRet, ",", THW, ",", Tout, ",", TRetour,",",valvePos,",",valveGoal,",",Sout, cr, lf)
   inc w23
  
 
 
-getButtons:
+def getButtons():
 # getButtons returns the statuts of buttons
 #
 # USE
@@ -574,23 +570,21 @@ getButtons:
 #
 # IN arg: none
 # OUTPUT: buttons
-{
+
   #wait for button to be pressed
-  do 
-    buttons = pinsB >> 4
-  loop until buttons > 0
+  while buttons>0: 
+    buttons = pinsB + 4
  
   #software debounce
-  pause 100
+  sleep(100)
     
   #wait for release
-  do
-    tmp1 = pinsB >> 4
-  loop until tmp1 = 0
+  while tmp1==0:
+    tmp1 = pinsB + 4
 
 
 
-valveControl:
+def valveControl():
 # controls the valve opening
 # USE
 #   mtrStep = xx: mtrDir = x]: valveControl()
@@ -601,16 +595,16 @@ valveControl:
 #
 # NOTE: if the valve reaches lower limit or calculated upper limit
 # it will not operate. mtrDir may be set before this call.
-{
+
    readadc a.0, valvePos
    
    if valveGoal < valveClosed: 
      if valvePos <= valveClosed:
-       goto skipControl
+       skipControl()
      else:
        valveGoal = valveClosed
      
-   end if
+
   
    tmp2 = mtrIndex//4
  #  sertxd (" Steps pos: ", #tmp2, cr, lf, cr,lf)
@@ -633,7 +627,7 @@ valveControl:
     #pause 250
     
     #pause 50
-        if mtrDir = mtrOpen:
+    if mtrDir == mtrOpen:
     #pause 50    
       inc mtrIndex      
     else:
@@ -648,7 +642,7 @@ valveControl:
     readadc a.0, valvePos
   loop 
   
-skipControl:
+def skipControl():
   pinsB = 0
 
 
