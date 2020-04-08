@@ -1,4 +1,5 @@
 from time import sleep
+import serial
 """
 =================================
 
@@ -128,14 +129,14 @@ HWSwitchOver = 3200     #HWC threshold was 3000
 
   
   #PID
-SOut = "w7"		#Set output temperature
-SRet = "w8"		#Set return temperature
-Pwr  = "w9"		#Duty cycle for pwm
-Err1 = "w10"
-Err2 = "w11"
-Lag  = "b24"		#TRetour lag, cycles
-cLag = "b25"
-Gain = "w13"
+SOut = 7		#Set output temperature
+SRet = 8		#Set return temperature
+Pwr  = 9		#Duty cycle for pwm
+Err1 = 10
+Err2 = 11
+Lag  = 24		#TRetour lag, cycles
+cLag = 25
+Gain = 13
 kP   = 40
 kI   = 25
 kH   = 3
@@ -151,9 +152,9 @@ btnSet  = "bit8"
   #Step Motor
 mtrDir    = "bit1"	#motor direction, true negative, false positive
 mtrStep   = "b28"	#number of steps
-mtrIndex  = "b29"      #step index
+mtrIndex  = 29      #step index
 valvePos  = "w15"	#valve position
-valveGoal = "w16"	#valve goal
+valveGoal = 16	#valve goal
   
 mtrOpen  = 0	      #open valve
 mtrClose = 1		#close valve
@@ -163,11 +164,11 @@ valveClosed = 64      #lower valve limit, 8 bit adc
 startlt = "w20"         #time low temp on
 stoplt = "w21"	    #time low temp off
 		
-temp_word = "w17"   #(b34 + b35)
-temp_byte = "b36"
-hours = "b37"
-mins = "b38"
-secs = "b39"
+temp_word = 17   #(b34 + b35)
+temp_byte = 36
+hours = 37
+mins = 38
+secs = 39
 
 
 def OnPowerUp():
@@ -233,8 +234,8 @@ def OnPowerUp():
   #  Read Time 
   i2cslave %11010000, i2cslow, i2cbyte
   readi2c 0,(secs,mins,hours,b34,b35,b36)
-  b34=b36
-  temp_byte = secs %11110000 / 16 * 10
+  b34="b36"
+  temp_byte = secs % 11110000 / 16 * 10
   secs = secs % 00001111 + temp_byte
   temp_byte = mins %11110000 / 16 * 10
   mins = mins % 00001111 + temp_byte
@@ -266,7 +267,7 @@ def main():
  
 
   #controls operation
-  if flowSw == true:
+  if FlowSw == true:
   
     if isElectrical == true: 
     
@@ -337,9 +338,9 @@ def hwcControl():
 # NOTE: alters pwr for display purposes
   if TOut <= Sout:
     Err1 = SOut - TOut
-    if Err1 >:
+    if Err1 > BW:
       Gain = Err1*kH/100
-      valveGoal = Gain + valveGoal max valveFullOpen
+      valveGoal = max([Gain + valveGoal], valveFullOpen)
       mtrDir = mtrOpen: valveControl()
   else:
     Err1 = TOut - Sout
@@ -374,11 +375,11 @@ def elControl():
   #PID1 control
   #==============================
   #Proportional
-  if TOut <= Sout:
+  if TOut <= SOut:
     Err1 = SOut - TOut
     if Err1 > BW:
       Gain = Err1*kP/100
-      Pwr  = Gain + Pwr max 1000
+      Pwr  = max([Gain + Pwr], 1000)
   else:
     Err1 = TOut - Sout
     if Err1 > BW:
@@ -406,17 +407,17 @@ def PID2():
 
   #PID2 control
   #==============================
-  inc cLag
+  cLag = cLag + 1
   if TRetour <= SRet:
     Err2 = SRet - TRetour
-    if Lag = cLag:
+    if Lag == cLag:
       Gain = kI*Err2/10
-      SOut = SOut + Gain max 8000
+      SOut = max([SOut + Gain], 8000)
       cLag = 0
     
   else:
     Err2 = TRetour - SRet
-    if Lag = cLag:
+    if Lag == cLag:
       Gain = kI*Err2/10
       Sout = Sout - Gain
       if SOut < SRet: 
@@ -456,25 +457,25 @@ def TRead():
   @bptrinc = tmp5
   @bptr    = tmp6
   
-  if TDisp = true:
+  if TDisp == true:
     tmp2 = tmp2/10
     serout Lcd, Baud, (0, tmp3)
     if tmp1 <10:
       serout Lcd, Baud, (" ")
     
     serout Lcd, Baud, (#tmp1, ".", #tmp2)
-  
+
  
   
  
 def MainScreen():
-# Updates main screen backround
-#
-# USE
-#   MainScreen()
-#
-# IN arg: none
-# OUTPUT: none
+  # Updates main screen backround
+  #
+  # USE
+  #   MainScreen()
+  #
+  # IN arg: none
+  # OUTPUT: none
   serout Lcd, Baud, (0, clr)
   serout Lcd, Baud, (0, line1)
   for bCount  in range (95, 114):
@@ -627,14 +628,15 @@ def valveControl():
     #pause 50
     if mtrDir == mtrOpen:
     #pause 50    
-      inc mtrIndex      
+      mtrIndex = mtrIndex + 1
     else:
-      dec mtrIndex   
+      mtrIndex =  mtrIndex + 1
     
 
     #move motor
-    lookup tmp2, (%1100, %0110, %0011, %1001), pinsB
-    pause 20
+    if tmp2 in (1100, 0o0110, 0o0011, 1001):
+        tmp2 = pinsB
+    sleep(.20)
     tmp2 = mtrIndex//4
     
     readadc a.0, valvePos
